@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang='en'>
+  <head>
+    <title>Final Project</title>
+    <meta charset="utf-8">
+    <link href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/@mdi/font@4.x/css/materialdesignicons.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css" rel="stylesheet">
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="d3-tip.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-legend/2.25.6/d3-legend.js"></script>
+    <link rel="stylesheet" href="main.css">
+  </head>
+
+  <body>
+    <main>
+
+
+
+
+
+    <div id="app">
+  
+        <v-app  style=" background: #3A1C71; background: -webkit-linear-gradient(135deg, #f5f7fa 0%, #FBCAC5 100%); ">
+          <v-main>
+              <v-toolbar app>
+           
+                  <v-toolbar-title>
+                 
+                      The Drug Overdose Epidemic
+               
+                  </v-toolbar-title>
+                  <v-spacer></v-spacer>
+                  <v-toolbar-items class="hidden-xs-only">
+                
+                    <v-btn  flat href="index.html" >
+                     The Story
+                    </v-btn>
+                    <v-btn  flat href="#theMap" >
+                      The Map
+                     </v-btn>
+                   
+                  </v-toolbar-items>
+                </v-toolbar>
+            <v-row><v-col
+              :cols="12"
+              >
+            </v-col></v-row>
+            <v-row>
+                <v-col
+                :cols="2"
+                >
+              </v-col><v-col
+              :cols="8"
+              >
+              <h1 class="text-xl-h4 text-center">Behind the Numbers</h1>
+              <br>
+              
+              <P class="text-md-body-1 text-left">Accrding to the Centers for Disease Control and Prevention(CDC) More than 750,000 
+                people have died since 1999 from a drug overdose in the United States of America. 
+                Two out of three drug overdose deaths in 2018 involved an opioid. 
+                Opioids are substances that work in the nervous system of the body or in specific 
+                receptors in the brain to reduce the intensity of pain. 
+                Overdose deaths involving opioids, including prescription opioids, heroin, and synthetic opioids (like fentanyl), have increased almost six times since 1999. Overdoses involving opioids killed nearly 47,000 people in 2018, and 32% of those deaths involved prescription opioids.
+
+              </P>
+              <P class="text-md-body-1 text-left">
+                This rise in popularity of synthetic opioids has led a catastrophic rise in overdose deaths in recent times. When autorities started cracking down on
+                opioids and regulating them, the numbers only increased, as users turned to the black market in order to use Heroin as a substitute. The following is an educational video on the many factors that led to the North American Opioid epidemic. Now with the rise in popularity of even stronger synthetic opioids like Fentanyl and Carfentanil the numbers are bound to get worse with no end in sight.
+                </P>
+                <br>
+                <iframe width="800" height="600" src="https://www.youtube.com/embed/GJc-YI7OWfY">
+                </iframe>
+            </v-col><v-col
+            :cols="2"
+            >
+          </v-col></v-row>
+
+          <v-row>
+              <v-col
+              :cols="2"
+              >
+            </v-col>
+            <v-col
+            :cols="8"
+            >
+            <h1 id="theMap" class="text-xl-h4 text-center">Take a Look</h1>
+            <br>
+            <P class="text-md-body-1 text-left">
+              The following is a Choropleth map that showcases the number of overdose deaths in the United States of America by state, as a rolling 12-month-ending total.
+              Use the slider to scrub month by month and hover on any state for a more in-depth look at the numbers. Data updates monthly. Source:
+              <a href="https://www.cdc.gov/drugoverdose/data/statedeaths.html">Centers for Disease Control and Prevention(CDC).</a>
+              </P>
+          </v-col>
+          <v-col
+          :cols="2"
+          >
+        </v-col>
+        </v-row>
+
+            <v-row>
+                <v-col
+                :cols="2"
+                >
+              </v-col>
+              <v-col
+              :cols="6"
+              >
+              <input id="slide" type="range" min="1" max="1" step="1" value="1">
+              <div id="sliderAmount"><h1 class="text-xl-h1 " >Loading...</h1></div>
+            </v-col>
+            <v-col
+            :cols="4"
+            >
+          </v-col>
+          </v-row>
+            <v-row >
+            
+              <v-col
+              :cols="2"
+              >
+            </v-col>
+        
+                <v-col
+                :cols="2"
+                >
+                <svg id='legend'></svg>
+             
+                </v-col>  
+     
+    
+                <v-col
+                :cols="6"
+                >
+                <svg id='choropleth'></svg>
+                </v-col>
+  
+          
+    
+                <v-col
+                :cols="2"
+                >
+
+             
+                </v-col>  
+       
+          </v-row>
+     
+  
+          </v-main>
+        </v-app>
+      </div>
+    
+      <script src="https://cdn.jsdelivr.net/npm/vue@2.x/dist/vue.js"></script>
+      <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+      <script>
+        new Vue({
+          el: '#app',
+          vuetify: new Vuetify(),
+          data: () => ({
+            windowHeight: window.innerHeight,
+      windowWidth: window.innerWidth
+    })
+        })
+      </script>
+  
+  
+    </main>
+      <script src='./main.js'></script>
+    </body>
+  </html>

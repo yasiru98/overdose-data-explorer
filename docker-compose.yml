@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: epidemic_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: epidemic
+      POSTGRES_PASSWORD: epidemic
+      POSTGRES_DB: epidemic
+    ports:
+      # host port 5433 (not 5432) - something else on this machine is already
+      # bound to 5432 and was intercepting connections meant for this container
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+
+volumes:
+  pgdata:
