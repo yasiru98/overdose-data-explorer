@@ -3,6 +3,7 @@ from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from app.db import fetch_death_series
 
@@ -15,7 +16,32 @@ log = logging.getLogger("app")
 # into backend/, this just points at them from here
 FRONTEND_DIR = Path(__file__).resolve().parents[2]
 
+# the frontend loads Vue/Vuetify/D3 from a handful of different CDNs and
+# embeds a YouTube video, and Vue's standalone build compiles its templates
+# at runtime (needs 'unsafe-eval'). without sending our own CSP header,
+# whatever's in front of this in production (railway's proxy, in our case)
+# sends a stricter default that blocks that runtime compile and the whole
+# vue app silently fails to render - this header is what actually fixes that
+CSP_HEADER = (
+    "default-src 'self' https:; "
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https:; "
+    "style-src 'self' 'unsafe-inline' https:; "
+    "font-src 'self' https: data:; "
+    "img-src 'self' https: data:; "
+    "frame-src https:; "
+    "connect-src 'self' https:;"
+)
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+        response.headers["Content-Security-Policy"] = CSP_HEADER
+        return response
+
+
 app = FastAPI(title="Drug Overdose Epidemic API")
+app.add_middleware(SecurityHeadersMiddleware)
 
 
 @app.get("/health")
