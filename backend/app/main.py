@@ -10,11 +10,13 @@ from app.db import fetch_death_series
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
 log = logging.getLogger("app")
 
-# main.py lives at backend/app/main.py, so going up 2 parents lands on the
-# project root (epidemic/) where index.html, main.js, main.css etc already
-# live. keeping the frontend files where they are instead of moving them
-# into backend/, this just points at them from here
-FRONTEND_DIR = Path(__file__).resolve().parents[2]
+# main.py lives at backend/app/main.py, so going up 1 parent lands on
+# backend/, where the static/ folder holds index.html, main.js, etc.
+# these live inside backend/ (not the project root) specifically because
+# railway's deploy only includes whatever's under its configured Root
+# Directory (backend/) - anything outside that never makes it into the
+# deployed container, which is exactly what broke this the first time
+FRONTEND_DIR = Path(__file__).resolve().parents[1] / "static"
 
 # the frontend loads Vue/Vuetify/D3 from a handful of different CDNs and
 # embeds a YouTube video, and Vue's standalone build compiles its templates
