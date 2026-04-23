@@ -176,34 +176,50 @@ const createVisualization = (dataset, stateValues) => {
 }
 
 /* BOOTSTRAP: load everything once from our own backend, then wire up the slider */
-Promise.all([
-  d3.json('/api/deaths'),
-  d3.json('us-states.json')
-]).then(([records, geojson]) => {
-  usStatesGeoJson = geojson;
+function loadData(attempt = 1) {
+  Promise.all([
+    d3.json('/api/deaths'),
+    d3.json('us-states.json')
+  ]).then(([records, geojson]) => {
+    usStatesGeoJson = geojson;
 
-  records.forEach(r => {
-    if (!seriesByDate.has(r.period_end_date)) {
-      seriesByDate.set(r.period_end_date, {});
+    records.forEach(r => {
+      if (!seriesByDate.has(r.period_end_date)) {
+        seriesByDate.set(r.period_end_date, {});
+      }
+      seriesByDate.get(r.period_end_date)[r.state_name] = r.data_value;
+    });
+
+    dates = Array.from(seriesByDate.keys()).sort();
+
+    // fixed color scale domain across the WHOLE time range (not just whichever
+    // month happens to be selected) so colors stay comparable as you scrub -
+    // this is what was broken in the original version, where the ramp only
+    // ever got built from 2014's numbers no matter what year you picked
+    const allValues = records.map(r => r.data_value).filter(v => v != null);
+    minVal = d3.min(allValues);
+    maxVal = d3.max(allValues);
+    ramp = d3.scaleLinear().domain([minVal, maxVal]).range([lowColor, highColor]);
+
+    slide.min = 1;
+    slide.max = dates.length;
+    slide.step = 1;
+    slide.value = dates.length;
+
+    showDate(dates[dates.length - 1]); // start on the most recent month
+  }).catch(err => {
+    console.error('Failed to load data (attempt ' + attempt + '):', err);
+    if (attempt < 3) {
+      // the backend's database connection can occasionally be stale on the
+      // first request after a period of inactivity (neon, our hosted
+      // postgres, suspends when idle) and needs a moment to recover.
+      // retry automatically instead of leaving the page stuck on "Loading..."
+      // with no explanation and making the user refresh manually
+      setTimeout(() => loadData(attempt + 1), 1500);
+    } else {
+      sliderDiv.innerHTML = '<h1 class="text-xl-h1">Something went wrong loading the data. Please refresh the page.</h1>';
     }
-    seriesByDate.get(r.period_end_date)[r.state_name] = r.data_value;
   });
+}
 
-  dates = Array.from(seriesByDate.keys()).sort();
-
-  // fixed color scale domain across the WHOLE time range (not just whichever
-  // month happens to be selected) so colors stay comparable as you scrub -
-  // this is what was broken in the original version, where the ramp only
-  // ever got built from 2014's numbers no matter what year you picked
-  const allValues = records.map(r => r.data_value).filter(v => v != null);
-  minVal = d3.min(allValues);
-  maxVal = d3.max(allValues);
-  ramp = d3.scaleLinear().domain([minVal, maxVal]).range([lowColor, highColor]);
-
-  slide.min = 1;
-  slide.max = dates.length;
-  slide.step = 1;
-  slide.value = dates.length;
-
-  showDate(dates[dates.length - 1]); // start on the most recent month
-});
+loadData();

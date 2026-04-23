@@ -1,6 +1,10 @@
+import logging
 import os
 
+import psycopg2
 from psycopg2 import pool
+
+log = logging.getLogger("app.db")
 
 # using a connection pool here instead of the etl's plain get_connection(),
 # since this is a live web server that could get hit by multiple requests
@@ -47,6 +51,12 @@ ORDER BY period_end_date, state_name;
 """
 
 
+def _run_query(conn):
+    with conn.cursor() as cur:
+        cur.execute(SELECT_SERIES_SQL, (TOTAL_INDICATOR,))
+        return cur.fetchall()
+
+
 def fetch_death_series():
     """grabs the full rolling-12-month-ending time series for every state,
     one row per state per month. this is small enough (a few thousand rows)
@@ -55,9 +65,20 @@ def fetch_death_series():
     month"""
     conn = _pool.getconn()
     try:
-        with conn.cursor() as cur:
-            cur.execute(SELECT_SERIES_SQL, (TOTAL_INDICATOR,))
-            rows = cur.fetchall()
+        try:
+            rows = _run_query(conn)
+        except psycopg2.OperationalError:
+            # neon (our hosted postgres) suspends its compute after a few
+            # minutes of no traffic and kills existing connections when it
+            # does. the pool has no way of knowing that happened until we
+            # actually try to use one of those connections and it fails.
+            # when that happens, throw the dead connection away - putting
+            # it back would just hand the same broken one to the next
+            # request - and retry once on a fresh connection
+            log.warning("Connection from pool was dead, retrying with a new one")
+            _pool.putconn(conn, close=True)
+            conn = _pool.getconn()
+            rows = _run_query(conn)
     finally:
         # always give the connection back to the pool, even if the query
         # blew up above - otherwise we'd leak connections out of the pool
